@@ -3,12 +3,13 @@
 #include <dirent.h>
 #include <string.h>
 
+
 // function prototypes
 int checkIsDir(char dirPath[], char fileName[]);
-int *getDirectoryFilesHigher(char dirPath[]);
-int getDirectoryFilesLower(char dirPath[]);
+long getDirectoryFilesHigher(char dirPath[]);
+long getDirectoryFilesLower(char dirPath[]);
 int getFileSize(char dirPath[], char fileName[]);
-struct sizeUnit formatFileSize(int fileSize);
+struct sizeUnit formatFileSize(long fileSize);
 
 struct sizeUnit
 {
@@ -18,7 +19,7 @@ struct sizeUnit
 
 
 
-struct sizeUnit formatFileSize(int fileSize)
+struct sizeUnit formatFileSize(long fileSize)
 {
     struct sizeUnit fileSizeUnit;
 
@@ -70,36 +71,22 @@ int checkIsDir(char dirPath[], char fileName[])
 
 
 
-int *getDirectoryFilesHigher(char dirPath[])
+long getDirectoryFilesHigher(char dirPath[])
 {
 
     DIR *directory;
     struct dirent *dir;
 
-    int totalDirSize = 0;
-    int fSize;
+    long totalDirSize = 0;
+    long fSize;
     struct sizeUnit fileSizeUnit;
     char filePrefix[] = " B";
-    int dirElementsCount = 0;
 
     directory = opendir(dirPath);
 
     if (directory) {
 
         printf("%6s\t%-6s%s\n\n", "Size", "Unit", "File Name");
-    
-        // count the number of files in the directory
-        while ((dir = readdir(directory)) != NULL) {
-            if(dir->d_name[0]!='.') {
-                dirElementsCount++;
-            }
-        }
-
-        int fileSizeAra[dirElementsCount];
-
-        // TODO remove this (just for testing)
-        // printf("\n\nTotal Directory elements: %d\n\n", dirElementsCount);
-        rewinddir(directory);
 
         // iterate through each file in the directory
         while ((dir = readdir(directory)) != NULL)
@@ -107,7 +94,6 @@ int *getDirectoryFilesHigher(char dirPath[])
             // check that file is not a hidden file (we will ignore those)
             if (dir->d_name[0] != '.')
             {
-
 
                 // call function recursively if the file is a directory
                 if (checkIsDir(dirPath, dir->d_name)) {
@@ -126,12 +112,8 @@ int *getDirectoryFilesHigher(char dirPath[])
                 printf("%5.1f\t%-6s", fileSizeUnit.size, filePrefix);
                 printf("%s\n", dir->d_name);
 
-                fileSizeAra[dirElementsCount] = fSize;
-                dirElementsCount--;
             }
         }
-
-
 
         closedir(directory);
 
@@ -140,21 +122,21 @@ int *getDirectoryFilesHigher(char dirPath[])
         printf("\n%5.1f\t%-6s", totalFileSizeUnit.size, filePrefix);
         printf("Total\n\n");
 
-        // TODO this seems to cause an overflow for the root directory
+        // TODO there seems to be an overflow for the root directory
         // because ints are not large enough to hold this value
-        return fileSizeAra;
+        return 0;
     }
 
 }
 
 
 
-int getDirectoryFilesLower(char dirPath[]) {
+long getDirectoryFilesLower(char dirPath[]) {
 
     DIR *directory;
     struct dirent *dir;
-    int totalDirSize = 0;
-    int fSize;
+    long totalDirSize = 0;
+    long fSize;
 
     directory = opendir(dirPath);
 
@@ -213,7 +195,7 @@ int main(int argc, char *argv[])
     // ensure that the right arguments have been provided
     if (argc == 2) {
         printf("Files in %s:\n\n", argv[1]);
-        int *fileSizeAra = getDirectoryFilesHigher(argv[1]);
+        getDirectoryFilesHigher(argv[1]);
 
 
     } else {
